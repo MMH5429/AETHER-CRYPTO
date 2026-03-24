@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AETHER-CRYPTO</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: #0a0a0f;
+            color: #e0e0e0;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* Animated background */
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 50%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
+            z-index: -1;
+            animation: bgPulse 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes bgPulse {
+            0% { opacity: 0.6; }
+            100% { opacity: 1; }
+        }
+
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 40px 20px;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            margin-bottom: 48px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+        }
+
+        .header p {
+            color: #6b7280;
+            font-size: 0.95rem;
+            letter-spacing: 1px;
+        }
+
+        /* Tab switcher */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 32px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .tab {
+            flex: 1;
+            padding: 14px 20px;
+            border: none;
+            border-radius: 10px;
+            background: transparent;
+            color: #6b7280;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+        }
+
+        .tab:hover {
+            color: #a0a0a0;
+        }
+
+        .tab.active-enc {
+            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.05));
+            color: #10b981;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
+        }
+
+        .tab.active-dec {
+            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05));
+            color: #3b82f6;
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+        }
+
+        /* Card */
+        .card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 16px;
+            padding: 36px;
+            backdrop-filter: blur(20px);
+        }
+
+        .card.hidden {
+            display: none;
+        }
+
+        /* Drop zone */
+        .drop-zone {
+            border: 2px dashed rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 48px 24px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: rgba(16, 185, 129, 0.4);
+            background: rgba(16, 185, 129, 0.03);
+        }
+
+        .drop-zone.dec-zone:hover,
+        .drop-zone.dec-zone.dragover {
+            border-color: rgba(59, 130, 246, 0.4);
+            background: rgba(59, 130, 246, 0.03);
+        }
+
+        .drop-zone.has-file {
+            border-color: rgba(16, 185, 129, 0.3);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .drop-zone.dec-zone.has-file {
+            border-color: rgba(59, 130, 246, 0.3);
+            background: rgba(59, 130, 246, 0.05);
+        }
+
+        .drop-icon {
+            font-size: 2.5rem;
+            margin-bottom: 12px;
+            opacity: 0.4;
+        }
+
+        .drop-text {
+            color: #6b7280;
+            font-size: 0.95rem;
+        }
+
+        .drop-text span {
+            color: #10b981;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+
+        .dec-zone .drop-text span {
+            color: #3b82f6;
+        }
+
+        .file-name {
+            margin-top: 8px;
+            font-weight: 600;
+            color: #e0e0e0;
+            font-size: 0.9rem;
+            word-break: break-all;
+        }
+
+        .file-size {
+            color: #6b7280;
+            font-size: 0.8rem;
+            margin-top: 4px;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        /* Password field */
+        .field {
+            margin-bottom: 20px;
+        }
+
+        .field label {
+            display: block;
+            font-size: 0.85rem;
+            color: #9ca3af;
+            margin-bottom: 8px;
+            font-weight: 500;
+            letter-spacing: 0.5px;
+        }
+
+        .password-wrapper {
+            position: relative;
+        }
+
+        .field input[type="password"],
+        .field input[type="text"] {
+            width: 100%;
+            padding: 14px 48px 14px 16px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            color: #e0e0e0;
+            font-size: 1rem;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .field input:focus {
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+
+        .dec-card .field input:focus {
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #6b7280;
+            cursor: pointer;
+            font-size: 1.1rem;
+            padding: 4px;
+        }
+
+        .toggle-password:hover {
+            color: #9ca3af;
+        }
+
+        /* Checkbox */
+        .checkbox-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 24px;
+            padding: 12px 16px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.04);
+        }
+
+        .checkbox-row input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #10b981;
+            cursor: pointer;
+        }
+
+        .checkbox-row label {
+            font-size: 0.9rem;
+            color: #9ca3af;
+            cursor: pointer;
+        }
+
+        .checkbox-row .hint {
+            font-size: 0.75rem;
+            color: #4b5563;
+            margin-left: auto;
+        }
+
+        /* Submit button */
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1.05rem;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .encrypt-btn {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .encrypt-btn:hover:not(:disabled) {
+            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .decrypt-btn {
+            background: linear-gradient(135deg, #3b82f6, #2563eb);
+            color: white;
+        }
+
+        .decrypt-btn:hover:not(:disabled) {
+            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.3);
+            transform: translateY(-1px);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .submit-btn.loading {
+            pointer-events: none;
+        }
+
+        /* Status messages */
+        .status {
+            margin-top: 20px;
+            padding: 14px 18px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .status.success {
+            display: block;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            color: #34d399;
+        }
+
+        .status.error {
+            display: block;
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #f87171;
+        }
+
+        .status.processing {
+            display: block;
+            background: rgba(251, 191, 36, 0.1);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            color: #fbbf24;
+        }
+
+        /* Spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Info section */
+        .info {
+            margin-top: 48px;
+            text-align: center;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            margin-top: 20px;
+        }
+
+        .info-item {
+            padding: 20px 12px;
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.04);
+            border-radius: 12px;
+        }
+
+        .info-item .value {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #10b981, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .info-item .label {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 48px;
+            padding: 20px;
+            color: #374151;
+            font-size: 0.8rem;
+        }
+
+        .footer a {
+            color: #6b7280;
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            color: #9ca3af;
+        }
+
+        /* Warning */
+        .warning {
+            font-size: 0.78rem;
+            color: #92400e;
+            background: rgba(251, 191, 36, 0.08);
+            border: 1px solid rgba(251, 191, 36, 0.15);
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        @media (max-width: 600px) {
+            .container { padding: 24px 16px; }
+            .header h1 { font-size: 1.8rem; }
+            .card { padding: 24px; }
+            .info-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>AETHER-CRYPTO</h1>
+            <p>128-bit SPN cipher &mdash; encrypt &amp; decrypt files in your browser</p>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+            <button class="tab active-enc" id="tab-enc" onclick="switchTab('enc')">ENCRYPT</button>
+            <button class="tab" id="tab-dec" onclick="switchTab('dec')">DECRYPT</button>
+        </div>
+
+        <!-- Encrypt Card -->
+        <div class="card" id="card-enc">
+            <div class="drop-zone" id="drop-enc" onclick="document.getElementById('file-enc').click()">
+                <div class="drop-icon">&#128274;</div>
+                <div class="drop-text">Drag & drop a file here or <span>browse</span></div>
+                <div class="file-name" id="fname-enc"></div>
+                <div class="file-size" id="fsize-enc"></div>
+                <input type="file" class="file-input" id="file-enc" onchange="handleFile(this, 'enc')">
+            </div>
+
+            <div class="field">
+                <label>PASSWORD</label>
+                <div class="password-wrapper">
+                    <input type="password" id="pass-enc" placeholder="Enter encryption password">
+                    <button class="toggle-password" onclick="togglePass('pass-enc', this)">&#128065;</button>
+                </div>
+            </div>
+
+            <div class="checkbox-row">
+                <input type="checkbox" id="market-salt">
+                <label for="market-salt">Use BTC market salt</label>
+                <span class="hint">Mixes live Bitcoin price into entropy</span>
+            </div>
+
+            <div class="warning">
+                The original file will be securely deleted from the server after encryption. Your encrypted file will be downloaded automatically.
+            </div>
+
+            <button class="submit-btn encrypt-btn" id="btn-enc" onclick="doEncrypt()" disabled>
+                ENCRYPT FILE
+            </button>
+
+            <div class="status" id="status-enc"></div>
+        </div>
+
+        <!-- Decrypt Card -->
+        <div class="card dec-card hidden" id="card-dec">
+            <div class="drop-zone dec-zone" id="drop-dec" onclick="document.getElementById('file-dec').click()">
+                <div class="drop-icon">&#128275;</div>
+                <div class="drop-text">Drag & drop an <strong>.aeth</strong> file or <span>browse</span></div>
+                <div class="file-name" id="fname-dec"></div>
+                <div class="file-size" id="fsize-dec"></div>
+                <input type="file" class="file-input" id="file-dec" accept=".aeth" onchange="handleFile(this, 'dec')">
+            </div>
+
+            <div class="field">
+                <label>PASSWORD</label>
+                <div class="password-wrapper">
+                    <input type="password" id="pass-dec" placeholder="Enter decryption password">
+                    <button class="toggle-password" onclick="togglePass('pass-dec', this)">&#128065;</button>
+                </div>
+            </div>
+
+            <button class="submit-btn decrypt-btn" id="btn-dec" onclick="doDecrypt()" disabled>
+                DECRYPT FILE
+            </button>
+
+            <div class="status" id="status-dec"></div>
+        </div>
+
+        <!-- Info -->
+        <div class="info">
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="value">128-bit</div>
+                    <div class="label">Block Size</div>
+                </div>
+                <div class="info-item">
+                    <div class="value">16</div>
+                    <div class="label">SPN Rounds</div>
+                </div>
+                <div class="info-item">
+                    <div class="value">Argon2id</div>
+                    <div class="label">Key Derivation</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <a href="https://github.com/MMH5429/AETHER-CRYPTO" target="_blank">GitHub</a>
+            &nbsp;&middot;&nbsp; Educational project &mdash; not for production use
+        </div>
+    </div>
+
+    <script>
+        let encFile = null;
+        let decFile = null;
+
+        // Tab switching
+        function switchTab(tab) {
+            document.getElementById('card-enc').classList.toggle('hidden', tab !== 'enc');
+            document.getElementById('card-dec').classList.toggle('hidden', tab !== 'dec');
+            document.getElementById('tab-enc').className = tab === 'enc' ? 'tab active-enc' : 'tab';
+            document.getElementById('tab-dec').className = tab === 'dec' ? 'tab active-dec' : 'tab';
+        }
+
+        // File handling
+        function handleFile(input, mode) {
+            const file = input.files[0];
+            if (!file) return;
+
+            if (mode === 'enc') {
+                encFile = file;
+                document.getElementById('fname-enc').textContent = file.name;
+                document.getElementById('fsize-enc').textContent = formatSize(file.size);
+                document.getElementById('drop-enc').classList.add('has-file');
+                updateBtn('enc');
+            } else {
+                decFile = file;
+                document.getElementById('fname-dec').textContent = file.name;
+                document.getElementById('fsize-dec').textContent = formatSize(file.size);
+                document.getElementById('drop-dec').classList.add('has-file');
+                updateBtn('dec');
+            }
+        }
+
+        function formatSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+        }
+
+        function updateBtn(mode) {
+            if (mode === 'enc') {
+                document.getElementById('btn-enc').disabled = !(encFile && document.getElementById('pass-enc').value);
+            } else {
+                document.getElementById('btn-dec').disabled = !(decFile && document.getElementById('pass-dec').value);
+            }
+        }
+
+        document.getElementById('pass-enc').addEventListener('input', () => updateBtn('enc'));
+        document.getElementById('pass-dec').addEventListener('input', () => updateBtn('dec'));
+
+        // Toggle password visibility
+        function togglePass(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.innerHTML = '&#128064;';
+            } else {
+                input.type = 'password';
+                btn.innerHTML = '&#128065;';
+            }
+        }
+
+        // Drag and drop
+        ['drop-enc', 'drop-dec'].forEach(id => {
+            const zone = document.getElementById(id);
+            const mode = id.split('-')[1];
+
+            zone.addEventListener('dragover', e => {
+                e.preventDefault();
+                zone.classList.add('dragover');
+            });
+            zone.addEventListener('dragleave', () => {
+                zone.classList.remove('dragover');
+            });
+            zone.addEventListener('drop', e => {
+                e.preventDefault();
+                zone.classList.remove('dragover');
+                const file = e.dataTransfer.files[0];
+                if (file) {
+                    const input = document.getElementById('file-' + mode);
+                    const dt = new DataTransfer();
+                    dt.items.add(file);
+                    input.files = dt.files;
+                    handleFile(input, mode);
+                }
+            });
+        });
+
+        function showStatus(mode, type, msg) {
+            const el = document.getElementById('status-' + mode);
+            el.className = 'status ' + type;
+            el.innerHTML = msg;
+        }
+
+        // Encrypt
+        async function doEncrypt() {
+            const btn = document.getElementById('btn-enc');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>ENCRYPTING...';
+            btn.classList.add('loading');
+            showStatus('enc', 'processing', '<span class="spinner"></span>Encrypting file... this may take a moment for large files.');
+
+            const form = new FormData();
+            form.append('file', encFile);
+            form.append('password', document.getElementById('pass-enc').value);
+            form.append('use_market_salt', document.getElementById('market-salt').checked ? 'true' : 'false');
+
+            try {
+                const res = await fetch('/encrypt', { method: 'POST', body: form });
+                if (!res.ok) {
+                    const err = await res.json();
+                    showStatus('enc', 'error', err.error || 'Encryption failed');
+                } else {
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = encFile.name + '.aeth';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showStatus('enc', 'success',
+                        'Encrypted successfully! File downloaded as <strong>' + encFile.name + '.aeth</strong><br>' +
+                        '<span style="font-size:0.8rem;opacity:0.7">Original file has been securely deleted from the server.</span>'
+                    );
+                }
+            } catch (e) {
+                showStatus('enc', 'error', 'Network error: ' + e.message);
+            }
+
+            btn.innerHTML = 'ENCRYPT FILE';
+            btn.classList.remove('loading');
+            updateBtn('enc');
+        }
+
+        // Decrypt
+        async function doDecrypt() {
+            const btn = document.getElementById('btn-dec');
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner"></span>DECRYPTING...';
+            btn.classList.add('loading');
+            showStatus('dec', 'processing', '<span class="spinner"></span>Decrypting file... verifying HMAC integrity.');
+
+            const form = new FormData();
+            form.append('file', decFile);
+            form.append('password', document.getElementById('pass-dec').value);
+
+            try {
+                const res = await fetch('/decrypt', { method: 'POST', body: form });
+                if (!res.ok) {
+                    const err = await res.json();
+                    showStatus('dec', 'error', err.error || 'Decryption failed');
+                } else {
+                    const blob = await res.blob();
+                    const url = URL.createObjectURL(blob);
+                    let outName = decFile.name;
+                    if (outName.endsWith('.aeth')) outName = outName.slice(0, -5);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = outName;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    showStatus('dec', 'success',
+                        'Decrypted successfully! File downloaded as <strong>' + outName + '</strong>'
+                    );
+                }
+            } catch (e) {
+                showStatus('dec', 'error', 'Network error: ' + e.message);
+            }
+
+            btn.innerHTML = 'DECRYPT FILE';
+            btn.classList.remove('loading');
+            updateBtn('dec');
+        }
+    </script>
+</body>
+</html>
