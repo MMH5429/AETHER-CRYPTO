@@ -3,212 +3,453 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AETHER-CRYPTO</title>
+    <title>AETHER // CRYPTO</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=JetBrains+Mono:ital,wght@0,300;0,400;0,500;0,700;1,400&family=Share+Tech+Mono&display=swap" rel="stylesheet">
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --cyan: #00f0ff;
+            --cyan-dim: rgba(0, 240, 255, 0.15);
+            --cyan-glow: rgba(0, 240, 255, 0.4);
+            --amber: #ff6b00;
+            --amber-dim: rgba(255, 107, 0, 0.15);
+            --amber-glow: rgba(255, 107, 0, 0.4);
+            --red: #ff2e4c;
+            --green: #00ff88;
+            --bg: #050508;
+            --surface: #0a0b10;
+            --surface-raised: #0e1018;
+            --border: rgba(0, 240, 255, 0.08);
+            --text: #c8ccd4;
+            --text-dim: #4a4f5c;
+            --text-bright: #eef0f4;
+            --font-display: 'Orbitron', monospace;
+            --font-mono: 'JetBrains Mono', 'Share Tech Mono', monospace;
+            --cut: 18px;
         }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
-            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
-            background: #0a0a0f;
-            color: #e0e0e0;
+            font-family: var(--font-mono);
+            background: var(--bg);
+            color: var(--text);
             min-height: 100vh;
             overflow-x: hidden;
-        }
-
-        /* Animated background */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background:
-                radial-gradient(ellipse at 20% 50%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 20%, rgba(59, 130, 246, 0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 80%, rgba(139, 92, 246, 0.06) 0%, transparent 50%);
-            z-index: -1;
-            animation: bgPulse 8s ease-in-out infinite alternate;
-        }
-
-        @keyframes bgPulse {
-            0% { opacity: 0.6; }
-            100% { opacity: 1; }
-        }
-
-        .container {
-            max-width: 720px;
-            margin: 0 auto;
-            padding: 40px 20px;
-        }
-
-        /* Header */
-        .header {
-            text-align: center;
-            margin-bottom: 48px;
-        }
-
-        .header h1 {
-            font-size: 2.5rem;
-            font-weight: 700;
-            letter-spacing: 4px;
-            background: linear-gradient(135deg, #10b981, #3b82f6, #8b5cf6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 8px;
-        }
-
-        .header p {
-            color: #6b7280;
-            font-size: 0.95rem;
-            letter-spacing: 1px;
-        }
-
-        /* Tab switcher */
-        .tabs {
-            display: flex;
-            gap: 4px;
-            background: rgba(255, 255, 255, 0.03);
-            border-radius: 12px;
-            padding: 4px;
-            margin-bottom: 32px;
-            border: 1px solid rgba(255, 255, 255, 0.06);
-        }
-
-        .tab {
-            flex: 1;
-            padding: 14px 20px;
-            border: none;
-            border-radius: 10px;
-            background: transparent;
-            color: #6b7280;
-            font-size: 1rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            letter-spacing: 0.5px;
-        }
-
-        .tab:hover {
-            color: #a0a0a0;
-        }
-
-        .tab.active-enc {
-            background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.05));
-            color: #10b981;
-            box-shadow: 0 0 20px rgba(16, 185, 129, 0.1);
-        }
-
-        .tab.active-dec {
-            background: linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(59, 130, 246, 0.05));
-            color: #3b82f6;
-            box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
-        }
-
-        /* Card */
-        .card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.06);
-            border-radius: 16px;
-            padding: 36px;
-            backdrop-filter: blur(20px);
-        }
-
-        .card.hidden {
-            display: none;
-        }
-
-        /* Drop zone */
-        .drop-zone {
-            border: 2px dashed rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
-            padding: 48px 24px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            margin-bottom: 24px;
             position: relative;
         }
 
-        .drop-zone:hover,
-        .drop-zone.dragover {
-            border-color: rgba(16, 185, 129, 0.4);
-            background: rgba(16, 185, 129, 0.03);
+        /* ── Hex rain canvas ── */
+        #hex-rain {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: 0;
+            opacity: 0.07;
+            pointer-events: none;
         }
 
-        .drop-zone.dec-zone:hover,
-        .drop-zone.dec-zone.dragover {
-            border-color: rgba(59, 130, 246, 0.4);
-            background: rgba(59, 130, 246, 0.03);
+        /* ── Scan lines overlay ── */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(0, 0, 0, 0.08) 2px,
+                rgba(0, 0, 0, 0.08) 4px
+            );
+            pointer-events: none;
+            z-index: 9999;
         }
 
-        .drop-zone.has-file {
-            border-color: rgba(16, 185, 129, 0.3);
-            background: rgba(16, 185, 129, 0.05);
+        /* ── Layout ── */
+        .shell {
+            position: relative;
+            z-index: 1;
+            max-width: 680px;
+            margin: 0 auto;
+            padding: 48px 20px 60px;
         }
 
-        .drop-zone.dec-zone.has-file {
-            border-color: rgba(59, 130, 246, 0.3);
-            background: rgba(59, 130, 246, 0.05);
+        /* ── Header ── */
+        .masthead {
+            text-align: center;
+            margin-bottom: 44px;
+            position: relative;
         }
 
-        .drop-icon {
-            font-size: 2.5rem;
+        .masthead-label {
+            font-family: var(--font-mono);
+            font-size: 0.65rem;
+            letter-spacing: 6px;
+            text-transform: uppercase;
+            color: var(--text-dim);
             margin-bottom: 12px;
-            opacity: 0.4;
+            display: block;
         }
 
-        .drop-text {
-            color: #6b7280;
-            font-size: 0.95rem;
+        .masthead h1 {
+            font-family: var(--font-display);
+            font-weight: 900;
+            font-size: 2.8rem;
+            letter-spacing: 6px;
+            color: var(--text-bright);
+            position: relative;
+            display: inline-block;
         }
 
-        .drop-text span {
-            color: #10b981;
-            text-decoration: underline;
+        .masthead h1 .slash {
+            color: var(--cyan);
+            text-shadow: 0 0 20px var(--cyan-glow), 0 0 60px rgba(0, 240, 255, 0.15);
+            margin: 0 2px;
+        }
+
+        /* Glitch effect */
+        .masthead h1::before,
+        .masthead h1::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            pointer-events: none;
+        }
+        .masthead h1::before {
+            color: var(--cyan);
+            opacity: 0;
+            animation: glitch1 4s infinite;
+        }
+        .masthead h1::after {
+            color: var(--amber);
+            opacity: 0;
+            animation: glitch2 4s infinite;
+        }
+
+        @keyframes glitch1 {
+            0%, 92%, 100% { opacity: 0; transform: none; }
+            93% { opacity: 0.7; transform: translate(-2px, 1px); clip-path: inset(20% 0 60% 0); }
+            95% { opacity: 0; }
+        }
+        @keyframes glitch2 {
+            0%, 94%, 100% { opacity: 0; transform: none; }
+            95% { opacity: 0.5; transform: translate(2px, -1px); clip-path: inset(50% 0 10% 0); }
+            97% { opacity: 0; }
+        }
+
+        .masthead-sub {
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+            letter-spacing: 3px;
+            color: var(--text-dim);
+            margin-top: 14px;
+            text-transform: uppercase;
+        }
+
+        .masthead-sub .dot {
+            display: inline-block;
+            width: 5px; height: 5px;
+            background: var(--cyan);
+            border-radius: 50%;
+            margin: 0 8px;
+            vertical-align: middle;
+            box-shadow: 0 0 6px var(--cyan-glow);
+            animation: pulse-dot 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        /* ── Mode toggle ── */
+        .mode-switch {
+            display: flex;
+            margin-bottom: 28px;
+            border: 1px solid var(--border);
+            background: var(--surface);
+            position: relative;
+            clip-path: polygon(var(--cut) 0, 100% 0, calc(100% - var(--cut)) 100%, 0 100%);
+        }
+
+        .mode-btn {
+            flex: 1;
+            padding: 15px 24px;
+            border: none;
+            background: transparent;
+            font-family: var(--font-display);
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 4px;
+            color: var(--text-dim);
             cursor: pointer;
+            transition: all 0.35s ease;
+            position: relative;
+            text-transform: uppercase;
         }
 
-        .dec-zone .drop-text span {
-            color: #3b82f6;
+        .mode-btn:hover { color: var(--text); }
+
+        .mode-btn.active-enc {
+            color: var(--cyan);
+            background: linear-gradient(180deg, rgba(0, 240, 255, 0.06) 0%, transparent 100%);
+            text-shadow: 0 0 14px var(--cyan-glow);
+        }
+
+        .mode-btn.active-enc::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 20%; right: 20%;
+            height: 1px;
+            background: var(--cyan);
+            box-shadow: 0 0 8px var(--cyan-glow);
+        }
+
+        .mode-btn.active-dec {
+            color: var(--amber);
+            background: linear-gradient(180deg, rgba(255, 107, 0, 0.06) 0%, transparent 100%);
+            text-shadow: 0 0 14px var(--amber-glow);
+        }
+
+        .mode-btn.active-dec::after {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 20%; right: 20%;
+            height: 1px;
+            background: var(--amber);
+            box-shadow: 0 0 8px var(--amber-glow);
+        }
+
+        /* ── Card (cut-corner panel) ── */
+        .panel {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 32px;
+            position: relative;
+            clip-path: polygon(0 0, calc(100% - var(--cut)) 0, 100% var(--cut), 100% 100%, var(--cut) 100%, 0 calc(100% - var(--cut)));
+            transition: border-color 0.3s;
+        }
+
+        .panel.hidden { display: none; }
+
+        /* Corner accents */
+        .panel::before {
+            content: '';
+            position: absolute;
+            top: -1px; right: calc(var(--cut) - 1px);
+            width: calc(var(--cut) * 1.42);
+            height: 1px;
+            background: var(--cyan);
+            transform: rotate(-45deg);
+            transform-origin: top right;
+            opacity: 0.5;
+        }
+
+        .enc-panel::before { background: var(--cyan); }
+        .dec-panel::before { background: var(--amber); }
+
+        .panel-label {
+            font-family: var(--font-display);
+            font-size: 0.6rem;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: var(--text-dim);
+            margin-bottom: 24px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .panel-label .indicator {
+            width: 6px; height: 6px;
+            border-radius: 50%;
+            animation: pulse-dot 1.5s ease-in-out infinite;
+        }
+
+        .enc-panel .panel-label .indicator { background: var(--cyan); box-shadow: 0 0 8px var(--cyan-glow); }
+        .dec-panel .panel-label .indicator { background: var(--amber); box-shadow: 0 0 8px var(--amber-glow); }
+
+        /* ── Drop zone (scanner style) ── */
+        .scanner {
+            position: relative;
+            border: 1px solid rgba(255,255,255,0.04);
+            background: rgba(0,0,0,0.3);
+            padding: 40px 24px;
+            text-align: center;
+            cursor: pointer;
+            margin-bottom: 24px;
+            transition: all 0.3s ease;
+        }
+
+        /* Animated corner brackets */
+        .scanner .corner {
+            position: absolute;
+            width: 16px; height: 16px;
+            transition: all 0.3s ease;
+        }
+        .scanner .corner::before,
+        .scanner .corner::after {
+            content: '';
+            position: absolute;
+            background: var(--cyan);
+            transition: all 0.3s ease;
+        }
+
+        .dec-panel .scanner .corner::before,
+        .dec-panel .scanner .corner::after { background: var(--amber); }
+
+        .scanner .corner.tl { top: -1px; left: -1px; }
+        .scanner .corner.tl::before { top: 0; left: 0; width: 16px; height: 1px; }
+        .scanner .corner.tl::after { top: 0; left: 0; width: 1px; height: 16px; }
+
+        .scanner .corner.tr { top: -1px; right: -1px; }
+        .scanner .corner.tr::before { top: 0; right: 0; width: 16px; height: 1px; }
+        .scanner .corner.tr::after { top: 0; right: 0; width: 1px; height: 16px; }
+
+        .scanner .corner.bl { bottom: -1px; left: -1px; }
+        .scanner .corner.bl::before { bottom: 0; left: 0; width: 16px; height: 1px; }
+        .scanner .corner.bl::after { bottom: 0; left: 0; width: 1px; height: 16px; }
+
+        .scanner .corner.br { bottom: -1px; right: -1px; }
+        .scanner .corner.br::before { bottom: 0; right: 0; width: 16px; height: 1px; }
+        .scanner .corner.br::after { bottom: 0; right: 0; width: 1px; height: 16px; }
+
+        .scanner:hover .corner::before,
+        .scanner:hover .corner::after,
+        .scanner.dragover .corner::before,
+        .scanner.dragover .corner::after {
+            background: var(--cyan);
+            box-shadow: 0 0 6px var(--cyan-glow);
+        }
+
+        .dec-panel .scanner:hover .corner::before,
+        .dec-panel .scanner:hover .corner::after,
+        .dec-panel .scanner.dragover .corner::before,
+        .dec-panel .scanner.dragover .corner::after {
+            background: var(--amber);
+            box-shadow: 0 0 6px var(--amber-glow);
+        }
+
+        .scanner:hover, .scanner.dragover {
+            background: rgba(0, 240, 255, 0.02);
+            border-color: rgba(0, 240, 255, 0.1);
+        }
+
+        .dec-panel .scanner:hover,
+        .dec-panel .scanner.dragover {
+            background: rgba(255, 107, 0, 0.02);
+            border-color: rgba(255, 107, 0, 0.1);
+        }
+
+        .scanner.has-file {
+            border-color: rgba(0, 240, 255, 0.15);
+            background: rgba(0, 240, 255, 0.02);
+        }
+
+        .dec-panel .scanner.has-file {
+            border-color: rgba(255, 107, 0, 0.15);
+            background: rgba(255, 107, 0, 0.02);
+        }
+
+        /* Scan line animation inside drop zone */
+        .scanner .scan-beam {
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--cyan), transparent);
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .scanner:hover .scan-beam,
+        .scanner.dragover .scan-beam {
+            opacity: 0.6;
+            animation: scan 2s ease-in-out infinite;
+        }
+
+        .dec-panel .scanner .scan-beam {
+            background: linear-gradient(90deg, transparent, var(--amber), transparent);
+        }
+
+        @keyframes scan {
+            0% { top: 0; }
+            50% { top: 100%; }
+            100% { top: 0; }
+        }
+
+        .scanner-icon {
+            font-size: 1.6rem;
+            margin-bottom: 10px;
+            opacity: 0.3;
+        }
+
+        .scanner-text {
+            font-family: var(--font-mono);
+            font-size: 0.75rem;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+
+        .scanner-text em {
+            font-style: normal;
+            color: var(--cyan);
+            cursor: pointer;
+            border-bottom: 1px dashed rgba(0, 240, 255, 0.3);
+        }
+
+        .dec-panel .scanner-text em {
+            color: var(--amber);
+            border-bottom-color: rgba(255, 107, 0, 0.3);
         }
 
         .file-name {
-            margin-top: 8px;
-            font-weight: 600;
-            color: #e0e0e0;
-            font-size: 0.9rem;
+            margin-top: 10px;
+            font-family: var(--font-mono);
+            font-weight: 500;
+            font-size: 0.8rem;
+            color: var(--text-bright);
             word-break: break-all;
         }
 
         .file-size {
-            color: #6b7280;
-            font-size: 0.8rem;
-            margin-top: 4px;
+            font-size: 0.65rem;
+            color: var(--text-dim);
+            margin-top: 3px;
+            letter-spacing: 1px;
         }
 
-        .file-input {
-            display: none;
-        }
+        .file-input { display: none; }
 
-        /* Password field */
+        /* ── Input fields ── */
         .field {
             margin-bottom: 20px;
         }
 
-        .field label {
-            display: block;
-            font-size: 0.85rem;
-            color: #9ca3af;
+        .field-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: var(--font-display);
+            font-size: 0.55rem;
+            letter-spacing: 4px;
+            text-transform: uppercase;
+            color: var(--text-dim);
             margin-bottom: 8px;
-            font-weight: 500;
-            letter-spacing: 0.5px;
         }
+
+        .field-label::before {
+            content: '>';
+            color: var(--cyan);
+            font-family: var(--font-mono);
+            font-size: 0.7rem;
+        }
+
+        .dec-panel .field-label::before { color: var(--amber); }
 
         .password-wrapper {
             position: relative;
@@ -217,358 +458,495 @@
         .field input[type="password"],
         .field input[type="text"] {
             width: 100%;
-            padding: 14px 48px 14px 16px;
-            background: rgba(255, 255, 255, 0.04);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 10px;
-            color: #e0e0e0;
-            font-size: 1rem;
-            font-family: inherit;
+            padding: 13px 44px 13px 14px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-left: 2px solid var(--cyan);
+            color: var(--text-bright);
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
             outline: none;
-            transition: border-color 0.3s ease;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
         }
+
+        .dec-panel .field input { border-left-color: var(--amber); }
 
         .field input:focus {
-            border-color: rgba(16, 185, 129, 0.4);
+            border-color: rgba(0, 240, 255, 0.2);
+            border-left-color: var(--cyan);
+            background: rgba(0, 240, 255, 0.02);
+            box-shadow: 0 0 20px rgba(0, 240, 255, 0.05);
         }
 
-        .dec-card .field input:focus {
-            border-color: rgba(59, 130, 246, 0.4);
+        .dec-panel .field input:focus {
+            border-color: rgba(255, 107, 0, 0.2);
+            border-left-color: var(--amber);
+            background: rgba(255, 107, 0, 0.02);
+            box-shadow: 0 0 20px rgba(255, 107, 0, 0.05);
         }
 
         .toggle-password {
             position: absolute;
-            right: 14px;
+            right: 12px;
             top: 50%;
             transform: translateY(-50%);
             background: none;
             border: none;
-            color: #6b7280;
+            color: var(--text-dim);
             cursor: pointer;
-            font-size: 1.1rem;
+            font-size: 0.9rem;
             padding: 4px;
+            transition: color 0.2s;
         }
 
-        .toggle-password:hover {
-            color: #9ca3af;
-        }
+        .toggle-password:hover { color: var(--text); }
 
-        /* Checkbox */
-        .checkbox-row {
+        /* ── Market salt toggle ── */
+        .option-row {
             display: flex;
             align-items: center;
-            gap: 10px;
-            margin-bottom: 24px;
-            padding: 12px 16px;
-            background: rgba(255, 255, 255, 0.02);
-            border-radius: 10px;
-            border: 1px solid rgba(255, 255, 255, 0.04);
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 10px 14px;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.03);
         }
 
-        .checkbox-row input[type="checkbox"] {
-            width: 18px;
-            height: 18px;
-            accent-color: #10b981;
+        .toggle-track {
+            width: 36px; height: 18px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 9px;
+            position: relative;
             cursor: pointer;
+            transition: background 0.3s;
+            flex-shrink: 0;
         }
 
-        .checkbox-row label {
-            font-size: 0.9rem;
-            color: #9ca3af;
-            cursor: pointer;
+        .toggle-track.on {
+            background: rgba(0, 240, 255, 0.2);
         }
 
-        .checkbox-row .hint {
-            font-size: 0.75rem;
-            color: #4b5563;
-            margin-left: auto;
-        }
-
-        /* Submit button */
-        .submit-btn {
-            width: 100%;
-            padding: 16px;
-            border: none;
-            border-radius: 12px;
-            font-size: 1.05rem;
-            font-weight: 600;
-            cursor: pointer;
-            letter-spacing: 1px;
+        .toggle-track .toggle-thumb {
+            position: absolute;
+            top: 2px; left: 2px;
+            width: 14px; height: 14px;
+            border-radius: 50%;
+            background: var(--text-dim);
             transition: all 0.3s ease;
+        }
+
+        .toggle-track.on .toggle-thumb {
+            left: 20px;
+            background: var(--cyan);
+            box-shadow: 0 0 8px var(--cyan-glow);
+        }
+
+        .option-label {
+            font-size: 0.7rem;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+        }
+
+        .option-hint {
+            font-size: 0.6rem;
+            color: rgba(255, 255, 255, 0.12);
+            margin-left: auto;
+            letter-spacing: 0.5px;
+        }
+
+        /* Hidden actual checkbox */
+        .option-row input[type="checkbox"] {
+            display: none;
+        }
+
+        /* ── Warning strip ── */
+        .warn-strip {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px 14px;
+            background: rgba(255, 107, 0, 0.04);
+            border-left: 2px solid var(--amber);
+            margin-bottom: 24px;
+            font-size: 0.65rem;
+            color: rgba(255, 107, 0, 0.6);
+            line-height: 1.6;
+            letter-spacing: 0.3px;
+        }
+
+        .warn-strip .warn-icon {
+            color: var(--amber);
+            font-size: 0.8rem;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        /* ── Action button ── */
+        .action-btn {
+            width: 100%;
+            padding: 16px 24px;
+            border: 1px solid var(--cyan);
+            background: transparent;
+            font-family: var(--font-display);
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 5px;
+            text-transform: uppercase;
+            color: var(--cyan);
+            cursor: pointer;
             position: relative;
             overflow: hidden;
+            transition: all 0.4s ease;
+            clip-path: polygon(var(--cut) 0, 100% 0, calc(100% - var(--cut)) 100%, 0 100%);
         }
 
-        .encrypt-btn {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
+        .action-btn::before {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%;
+            width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, var(--cyan-dim), transparent);
+            transition: left 0.5s ease;
         }
 
-        .encrypt-btn:hover:not(:disabled) {
-            box-shadow: 0 8px 30px rgba(16, 185, 129, 0.3);
-            transform: translateY(-1px);
+        .action-btn:hover:not(:disabled)::before {
+            left: 100%;
         }
 
-        .decrypt-btn {
-            background: linear-gradient(135deg, #3b82f6, #2563eb);
-            color: white;
+        .action-btn:hover:not(:disabled) {
+            background: rgba(0, 240, 255, 0.05);
+            text-shadow: 0 0 10px var(--cyan-glow);
+            box-shadow: 0 0 30px rgba(0, 240, 255, 0.08);
         }
 
-        .decrypt-btn:hover:not(:disabled) {
-            box-shadow: 0 8px 30px rgba(59, 130, 246, 0.3);
-            transform: translateY(-1px);
+        .action-btn.dec-btn {
+            border-color: var(--amber);
+            color: var(--amber);
         }
 
-        .submit-btn:disabled {
-            opacity: 0.5;
+        .action-btn.dec-btn::before {
+            background: linear-gradient(90deg, transparent, var(--amber-dim), transparent);
+        }
+
+        .action-btn.dec-btn:hover:not(:disabled) {
+            background: rgba(255, 107, 0, 0.05);
+            text-shadow: 0 0 10px var(--amber-glow);
+            box-shadow: 0 0 30px rgba(255, 107, 0, 0.08);
+        }
+
+        .action-btn:disabled {
+            opacity: 0.25;
             cursor: not-allowed;
-            transform: none;
         }
 
-        .submit-btn.loading {
-            pointer-events: none;
-        }
+        .action-btn.loading { pointer-events: none; }
 
-        /* Status messages */
+        /* ── Status messages ── */
         .status {
             margin-top: 20px;
-            padding: 14px 18px;
-            border-radius: 10px;
-            font-size: 0.9rem;
+            padding: 12px 16px;
+            font-size: 0.75rem;
+            line-height: 1.6;
             display: none;
-            animation: fadeIn 0.3s ease;
+            animation: fadeSlide 0.3s ease;
+            letter-spacing: 0.3px;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-4px); }
+        @keyframes fadeSlide {
+            from { opacity: 0; transform: translateY(-6px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
         .status.success {
             display: block;
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: #34d399;
+            border-left: 2px solid var(--green);
+            background: rgba(0, 255, 136, 0.03);
+            color: var(--green);
         }
 
         .status.error {
             display: block;
-            background: rgba(239, 68, 68, 0.1);
-            border: 1px solid rgba(239, 68, 68, 0.2);
-            color: #f87171;
+            border-left: 2px solid var(--red);
+            background: rgba(255, 46, 76, 0.03);
+            color: var(--red);
         }
 
         .status.processing {
             display: block;
-            background: rgba(251, 191, 36, 0.1);
-            border: 1px solid rgba(251, 191, 36, 0.2);
-            color: #fbbf24;
+            border-left: 2px solid var(--cyan);
+            background: rgba(0, 240, 255, 0.03);
+            color: var(--cyan);
         }
 
-        /* Spinner */
+        .dec-panel .status.processing {
+            border-left-color: var(--amber);
+            background: rgba(255, 107, 0, 0.03);
+            color: var(--amber);
+        }
+
+        /* ── Spinner ── */
         .spinner {
             display: inline-block;
-            width: 16px;
-            height: 16px;
-            border: 2px solid rgba(255, 255, 255, 0.2);
-            border-top-color: white;
+            width: 12px; height: 12px;
+            border: 1.5px solid rgba(255,255,255,0.1);
+            border-top-color: currentColor;
             border-radius: 50%;
             animation: spin 0.6s linear infinite;
             vertical-align: middle;
             margin-right: 8px;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Specs bar ── */
+        .specs {
+            display: flex;
+            justify-content: center;
+            gap: 1px;
+            margin-top: 48px;
+            background: var(--border);
         }
 
-        /* Info section */
-        .info {
-            margin-top: 48px;
+        .spec {
+            flex: 1;
+            padding: 16px 12px;
+            background: var(--surface);
             text-align: center;
         }
 
-        .info-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            margin-top: 20px;
-        }
-
-        .info-item {
-            padding: 20px 12px;
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.04);
-            border-radius: 12px;
-        }
-
-        .info-item .value {
-            font-size: 1.3rem;
-            font-weight: 700;
-            background: linear-gradient(135deg, #10b981, #3b82f6);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        .info-item .label {
-            font-size: 0.75rem;
-            color: #6b7280;
-            margin-top: 4px;
-            letter-spacing: 0.5px;
-            text-transform: uppercase;
-        }
-
-        .footer {
-            text-align: center;
-            margin-top: 48px;
-            padding: 20px;
-            color: #374151;
+        .spec-val {
+            font-family: var(--font-display);
             font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-bright);
+            letter-spacing: 2px;
         }
 
-        .footer a {
-            color: #6b7280;
+        .spec-key {
+            font-size: 0.55rem;
+            color: var(--text-dim);
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            margin-top: 6px;
+        }
+
+        /* ── Footer ── */
+        .foot {
+            text-align: center;
+            margin-top: 36px;
+            font-size: 0.6rem;
+            color: var(--text-dim);
+            letter-spacing: 2px;
+        }
+
+        .foot a {
+            color: var(--text-dim);
             text-decoration: none;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            transition: all 0.2s;
         }
 
-        .footer a:hover {
-            color: #9ca3af;
+        .foot a:hover {
+            color: var(--cyan);
+            border-bottom-color: var(--cyan);
         }
 
-        /* Warning */
-        .warning {
-            font-size: 0.78rem;
-            color: #92400e;
-            background: rgba(251, 191, 36, 0.08);
-            border: 1px solid rgba(251, 191, 36, 0.15);
-            padding: 10px 14px;
-            border-radius: 8px;
-            margin-bottom: 20px;
+        /* ── Entrance animations ── */
+        .masthead, .mode-switch, .panel, .specs, .foot {
+            opacity: 0;
+            transform: translateY(12px);
+            animation: enter 0.6s ease forwards;
+        }
+        .mode-switch { animation-delay: 0.1s; }
+        .panel { animation-delay: 0.2s; }
+        .specs { animation-delay: 0.3s; }
+        .foot { animation-delay: 0.4s; }
+
+        @keyframes enter {
+            to { opacity: 1; transform: translateY(0); }
         }
 
+        /* ── Responsive ── */
         @media (max-width: 600px) {
-            .container { padding: 24px 16px; }
-            .header h1 { font-size: 1.8rem; }
-            .card { padding: 24px; }
-            .info-grid { grid-template-columns: 1fr; }
+            .shell { padding: 32px 16px 48px; }
+            .masthead h1 { font-size: 1.8rem; letter-spacing: 3px; }
+            .panel { padding: 24px 18px; }
+            .specs { flex-direction: column; }
+            :root { --cut: 12px; }
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>AETHER-CRYPTO</h1>
-            <p>128-bit SPN cipher &mdash; encrypt &amp; decrypt files in your browser</p>
+    <canvas id="hex-rain"></canvas>
+
+    <div class="shell">
+        <!-- Header -->
+        <div class="masthead">
+            <span class="masthead-label">Secure File Encryption System</span>
+            <h1 data-text="AETHER // CRYPTO">AETHER <span class="slash">//</span> CRYPTO</h1>
+            <p class="masthead-sub">128-bit SPN cipher <span class="dot"></span> CTR mode <span class="dot"></span> Argon2id KDF</p>
         </div>
 
-        <!-- Tabs -->
-        <div class="tabs">
-            <button class="tab active-enc" id="tab-enc" onclick="switchTab('enc')">ENCRYPT</button>
-            <button class="tab" id="tab-dec" onclick="switchTab('dec')">DECRYPT</button>
+        <!-- Mode switch -->
+        <div class="mode-switch">
+            <button class="mode-btn active-enc" id="tab-enc" onclick="switchTab('enc')">Encrypt</button>
+            <button class="mode-btn" id="tab-dec" onclick="switchTab('dec')">Decrypt</button>
         </div>
 
-        <!-- Encrypt Card -->
-        <div class="card" id="card-enc">
-            <div class="drop-zone" id="drop-enc" onclick="document.getElementById('file-enc').click()">
-                <div class="drop-icon">&#128274;</div>
-                <div class="drop-text">Drag & drop a file here or <span>browse</span></div>
+        <!-- ═══ Encrypt Panel ═══ -->
+        <div class="panel enc-panel" id="card-enc">
+            <div class="panel-label"><span class="indicator"></span> File Encryption</div>
+
+            <div class="scanner" id="drop-enc" onclick="document.getElementById('file-enc').click()">
+                <div class="scan-beam"></div>
+                <span class="corner tl"></span><span class="corner tr"></span>
+                <span class="corner bl"></span><span class="corner br"></span>
+                <div class="scanner-icon">&#9906;</div>
+                <div class="scanner-text">Drop target file here or <em>browse filesystem</em></div>
                 <div class="file-name" id="fname-enc"></div>
                 <div class="file-size" id="fsize-enc"></div>
                 <input type="file" class="file-input" id="file-enc" onchange="handleFile(this, 'enc')">
             </div>
 
             <div class="field">
-                <label>PASSWORD</label>
+                <label class="field-label">Passphrase</label>
                 <div class="password-wrapper">
-                    <input type="password" id="pass-enc" placeholder="Enter encryption password">
-                    <button class="toggle-password" onclick="togglePass('pass-enc', this)">&#128065;</button>
+                    <input type="password" id="pass-enc" placeholder="Enter encryption key" autocomplete="off" spellcheck="false">
+                    <button class="toggle-password" onclick="togglePass('pass-enc', this)">&#9673;</button>
                 </div>
             </div>
 
-            <div class="checkbox-row">
+            <div class="option-row" onclick="toggleMarketSalt()">
                 <input type="checkbox" id="market-salt">
-                <label for="market-salt">Use BTC market salt</label>
-                <span class="hint">Mixes live Bitcoin price into entropy</span>
+                <div class="toggle-track" id="market-toggle">
+                    <div class="toggle-thumb"></div>
+                </div>
+                <span class="option-label">BTC Market Salt</span>
+                <span class="option-hint">Live price entropy</span>
             </div>
 
-            <div class="warning">
-                The original file will be securely deleted from the server after encryption. Your encrypted file will be downloaded automatically.
+            <div class="warn-strip">
+                <span class="warn-icon">&#9888;</span>
+                <span>Source file will be securely deleted from the server after encryption. The encrypted .aeth file downloads automatically.</span>
             </div>
 
-            <button class="submit-btn encrypt-btn" id="btn-enc" onclick="doEncrypt()" disabled>
-                ENCRYPT FILE
+            <button class="action-btn" id="btn-enc" onclick="doEncrypt()" disabled>
+                Initiate Encryption
             </button>
 
             <div class="status" id="status-enc"></div>
         </div>
 
-        <!-- Decrypt Card -->
-        <div class="card dec-card hidden" id="card-dec">
-            <div class="drop-zone dec-zone" id="drop-dec" onclick="document.getElementById('file-dec').click()">
-                <div class="drop-icon">&#128275;</div>
-                <div class="drop-text">Drag & drop an <strong>.aeth</strong> file or <span>browse</span></div>
+        <!-- ═══ Decrypt Panel ═══ -->
+        <div class="panel dec-panel hidden" id="card-dec">
+            <div class="panel-label"><span class="indicator"></span> File Decryption</div>
+
+            <div class="scanner" id="drop-dec" onclick="document.getElementById('file-dec').click()">
+                <div class="scan-beam"></div>
+                <span class="corner tl"></span><span class="corner tr"></span>
+                <span class="corner bl"></span><span class="corner br"></span>
+                <div class="scanner-icon">&#9908;</div>
+                <div class="scanner-text">Drop <strong>.aeth</strong> file here or <em>browse filesystem</em></div>
                 <div class="file-name" id="fname-dec"></div>
                 <div class="file-size" id="fsize-dec"></div>
                 <input type="file" class="file-input" id="file-dec" accept=".aeth" onchange="handleFile(this, 'dec')">
             </div>
 
             <div class="field">
-                <label>PASSWORD</label>
+                <label class="field-label">Passphrase</label>
                 <div class="password-wrapper">
-                    <input type="password" id="pass-dec" placeholder="Enter decryption password">
-                    <button class="toggle-password" onclick="togglePass('pass-dec', this)">&#128065;</button>
+                    <input type="password" id="pass-dec" placeholder="Enter decryption key" autocomplete="off" spellcheck="false">
+                    <button class="toggle-password" onclick="togglePass('pass-dec', this)">&#9673;</button>
                 </div>
             </div>
 
-            <button class="submit-btn decrypt-btn" id="btn-dec" onclick="doDecrypt()" disabled>
-                DECRYPT FILE
+            <button class="action-btn dec-btn" id="btn-dec" onclick="doDecrypt()" disabled>
+                Initiate Decryption
             </button>
 
             <div class="status" id="status-dec"></div>
         </div>
 
-        <!-- Info -->
-        <div class="info">
-            <div class="info-grid">
-                <div class="info-item">
-                    <div class="value">128-bit</div>
-                    <div class="label">Block Size</div>
-                </div>
-                <div class="info-item">
-                    <div class="value">16</div>
-                    <div class="label">SPN Rounds</div>
-                </div>
-                <div class="info-item">
-                    <div class="value">Argon2id</div>
-                    <div class="label">Key Derivation</div>
-                </div>
+        <!-- Specs -->
+        <div class="specs">
+            <div class="spec">
+                <div class="spec-val">128</div>
+                <div class="spec-key">Block Bits</div>
+            </div>
+            <div class="spec">
+                <div class="spec-val">16</div>
+                <div class="spec-key">SPN Rounds</div>
+            </div>
+            <div class="spec">
+                <div class="spec-val">256</div>
+                <div class="spec-key">Key Bits</div>
+            </div>
+            <div class="spec">
+                <div class="spec-val">HMAC</div>
+                <div class="spec-key">Integrity</div>
             </div>
         </div>
 
-        <div class="footer">
-            <a href="https://github.com/MMH5429/AETHER-CRYPTO" target="_blank">GitHub</a>
-            &nbsp;&middot;&nbsp; Educational project &mdash; not for production use
+        <div class="foot">
+            <a href="https://github.com/MMH5429/AETHER-CRYPTO" target="_blank">GITHUB</a>
+            &ensp;/&ensp; Educational project &mdash; not for production use
         </div>
     </div>
 
     <script>
+        /* ── Hex rain background ── */
+        (function() {
+            const canvas = document.getElementById('hex-rain');
+            const ctx = canvas.getContext('2d');
+            const chars = '0123456789ABCDEF';
+            let cols, drops;
+
+            function resize() {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+                cols = Math.floor(canvas.width / 18);
+                drops = Array(cols).fill(0).map(() => Math.random() * -100);
+            }
+
+            resize();
+            window.addEventListener('resize', resize);
+
+            function draw() {
+                ctx.fillStyle = 'rgba(5, 5, 8, 0.12)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#00f0ff';
+                ctx.font = '11px "Share Tech Mono", monospace';
+
+                for (let i = 0; i < cols; i++) {
+                    const ch = chars[Math.floor(Math.random() * chars.length)];
+                    ctx.fillText(ch, i * 18, drops[i] * 18);
+                    if (drops[i] * 18 > canvas.height && Math.random() > 0.985) {
+                        drops[i] = 0;
+                    }
+                    drops[i] += 0.4 + Math.random() * 0.2;
+                }
+                requestAnimationFrame(draw);
+            }
+            draw();
+        })();
+
+        /* ── Core logic (preserved from original) ── */
         let encFile = null;
         let decFile = null;
 
-        // Tab switching
         function switchTab(tab) {
             document.getElementById('card-enc').classList.toggle('hidden', tab !== 'enc');
             document.getElementById('card-dec').classList.toggle('hidden', tab !== 'dec');
-            document.getElementById('tab-enc').className = tab === 'enc' ? 'tab active-enc' : 'tab';
-            document.getElementById('tab-dec').className = tab === 'dec' ? 'tab active-dec' : 'tab';
+            document.getElementById('tab-enc').className = tab === 'enc' ? 'mode-btn active-enc' : 'mode-btn';
+            document.getElementById('tab-dec').className = tab === 'dec' ? 'mode-btn active-dec' : 'mode-btn';
         }
 
-        // File handling
         function handleFile(input, mode) {
             const file = input.files[0];
             if (!file) return;
-
             if (mode === 'enc') {
                 encFile = file;
                 document.getElementById('fname-enc').textContent = file.name;
@@ -601,30 +979,29 @@
         document.getElementById('pass-enc').addEventListener('input', () => updateBtn('enc'));
         document.getElementById('pass-dec').addEventListener('input', () => updateBtn('dec'));
 
-        // Toggle password visibility
         function togglePass(inputId, btn) {
             const input = document.getElementById(inputId);
             if (input.type === 'password') {
                 input.type = 'text';
-                btn.innerHTML = '&#128064;';
+                btn.innerHTML = '&#9679;';
             } else {
                 input.type = 'password';
-                btn.innerHTML = '&#128065;';
+                btn.innerHTML = '&#9673;';
             }
+        }
+
+        function toggleMarketSalt() {
+            const cb = document.getElementById('market-salt');
+            cb.checked = !cb.checked;
+            document.getElementById('market-toggle').classList.toggle('on', cb.checked);
         }
 
         // Drag and drop
         ['drop-enc', 'drop-dec'].forEach(id => {
             const zone = document.getElementById(id);
             const mode = id.split('-')[1];
-
-            zone.addEventListener('dragover', e => {
-                e.preventDefault();
-                zone.classList.add('dragover');
-            });
-            zone.addEventListener('dragleave', () => {
-                zone.classList.remove('dragover');
-            });
+            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('dragover'); });
+            zone.addEventListener('dragleave', () => { zone.classList.remove('dragover'); });
             zone.addEventListener('drop', e => {
                 e.preventDefault();
                 zone.classList.remove('dragover');
@@ -645,13 +1022,12 @@
             el.innerHTML = msg;
         }
 
-        // Encrypt
         async function doEncrypt() {
             const btn = document.getElementById('btn-enc');
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span>ENCRYPTING...';
+            btn.innerHTML = '<span class="spinner"></span>PROCESSING...';
             btn.classList.add('loading');
-            showStatus('enc', 'processing', '<span class="spinner"></span>Encrypting file... this may take a moment for large files.');
+            showStatus('enc', 'processing', '<span class="spinner"></span>Encrypting file... deriving keys via Argon2id.');
 
             const form = new FormData();
             form.append('file', encFile);
@@ -672,26 +1048,25 @@
                     a.click();
                     URL.revokeObjectURL(url);
                     showStatus('enc', 'success',
-                        'Encrypted successfully! File downloaded as <strong>' + encFile.name + '.aeth</strong><br>' +
-                        '<span style="font-size:0.8rem;opacity:0.7">Original file has been securely deleted from the server.</span>'
+                        'Encryption complete &mdash; <strong>' + encFile.name + '.aeth</strong> downloaded.<br>' +
+                        '<span style="opacity:0.5">Source file purged from server memory.</span>'
                     );
                 }
             } catch (e) {
                 showStatus('enc', 'error', 'Network error: ' + e.message);
             }
 
-            btn.innerHTML = 'ENCRYPT FILE';
+            btn.innerHTML = 'Initiate Encryption';
             btn.classList.remove('loading');
             updateBtn('enc');
         }
 
-        // Decrypt
         async function doDecrypt() {
             const btn = document.getElementById('btn-dec');
             btn.disabled = true;
-            btn.innerHTML = '<span class="spinner"></span>DECRYPTING...';
+            btn.innerHTML = '<span class="spinner"></span>PROCESSING...';
             btn.classList.add('loading');
-            showStatus('dec', 'processing', '<span class="spinner"></span>Decrypting file... verifying HMAC integrity.');
+            showStatus('dec', 'processing', '<span class="spinner"></span>Verifying HMAC integrity... decrypting.');
 
             const form = new FormData();
             form.append('file', decFile);
@@ -713,14 +1088,14 @@
                     a.click();
                     URL.revokeObjectURL(url);
                     showStatus('dec', 'success',
-                        'Decrypted successfully! File downloaded as <strong>' + outName + '</strong>'
+                        'Decryption complete &mdash; <strong>' + outName + '</strong> downloaded.'
                     );
                 }
             } catch (e) {
                 showStatus('dec', 'error', 'Network error: ' + e.message);
             }
 
-            btn.innerHTML = 'DECRYPT FILE';
+            btn.innerHTML = 'Initiate Decryption';
             btn.classList.remove('loading');
             updateBtn('dec');
         }
